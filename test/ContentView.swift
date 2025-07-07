@@ -1,95 +1,189 @@
 import SwiftUI
 
-let backgroundGradient = LinearGradient(
-    colors: [Color.white, Color.black], /// update gradient colors
-    startPoint: .top, endPoint: .bottom)
-
 struct ContentView: View {
-    
-    var body: some View {
-        VStack {
-            Spacer()
-            
-            // Your Logo
-            Image("basics-logo")/// replace with your logo
-                .resizable()
-                .aspectRatio(contentMode: .fit)
-                .foregroundColor(.black)
-                .frame(height: 40)
+    // Access the shared AuthManager from the environment
+    @EnvironmentObject var authManager: AuthManager
 
-            Spacer()
-            
-            // Continue with Apple Button
-            Button(
-                action: {
-                    // add action here
-                },
-                label: {
-                    HStack{
-                        Image("apple-icon")
-                            .resizable()
-                            .frame(width:20, height: 20)
-                            .padding(.horizontal, 6)
-                        
-                        Text("Continue with Apple")
-                            .bold()
-                            .foregroundColor(Color.black)
+    @State private var enableNotifications: Bool = true
+    @State private var appVersion: String = "1.0.0"
+
+    // Removed @AppStorage from useDarkMode as it's now global
+    @AppStorage("isDarkModeEnabled") private var useDarkMode: Bool = false
+
+    var body: some View { //this is not chatgpt
+        // Conditional view based on login status
+        if authManager.isLoggedIn {
+            TabView {
+                NavigationView {
+                    VStack {
+                        Spacer()
+                        Text("Welcome to RunSafe!")
+                            .font(.largeTitle)
+                            .fontWeight(.bold)
+                            .padding()
+                        Spacer()
                     }
-                    .frame(maxWidth: .infinity, minHeight: 60)
-                    .background(Color.gray) /// make the background gray
-                    .cornerRadius(10) /// make the background rounded
-                    .overlay( /// apply a rounded border
-                        RoundedRectangle(cornerRadius: 10)
-                            .stroke(Color.gray, lineWidth: 1)
-                    )
-                })
-            
-            Spacer()
-                .frame(height: 15)
-            
-            // Continue with Google Button
-            Button(
-                action: {
-                    // add action here
-                },
-                label: {
-                    HStack{
-                        Image("google-icon")
-                            .resizable()
-                            .frame(width:20, height: 20)
-                            .padding(.horizontal, 6)
-                        
-                        Text("Continue with Google")
-                            .bold()
-                            .foregroundColor(Color.black)
-                        
-                        
+                    .navigationTitle("Home")
+                    .navigationBarTitleDisplayMode(.inline)
+                }
+                .tabItem {
+                    Label("Home", systemImage: "house.fill")
+                }
+
+                NavigationView {
+                    VStack {
+                        Text("Your Runs Log")
+                            .font(.largeTitle)
+                            .fontWeight(.bold)
                     }
-                    .frame(maxWidth: .infinity, minHeight: 60)
-                    .background(Color.gray) /// make the background gray
-                    .cornerRadius(10) /// make the background rounded
-                    .overlay( /// apply a rounded border
-                        RoundedRectangle(cornerRadius: 10)
-                            .stroke(Color.gray, lineWidth: 1)
-                    )
-                })
-            
-            // Legal Disclaimer
-            Text("By continuing, you agree to Basic's [Terms of Service](https://basics.com/terms-of-service) and [Privacy Policy](https://basics.com/privacypolicy) ")
-                .multilineTextAlignment(.center)
-                .foregroundColor(Color.gray)
-                .tint(Color.gray)
-                .padding(.top, 20)
-                .font(.caption)
-                .frame(width: 250)
+                    .navigationTitle("Runs")
+                    .navigationBarTitleDisplayMode(.inline)
+                }
+                .tabItem {
+                    Label("Runs", systemImage: "figure.run")
+                }
+
+                NavigationView {
+                    VStack {
+                        Text("Your Goals & Progress")
+                            .font(.largeTitle)
+                            .fontWeight(.bold)
+                    }
+                    .navigationTitle("Goals")
+                    .navigationBarTitleDisplayMode(.inline)
+                }
+                .tabItem {
+                    Label("Goals", systemImage: "target")
+                }
+
+                NavigationView {
+                    VStack {
+                        Text("Community Chat")
+                            .font(.largeTitle)
+                            .fontWeight(.bold)
+                    }
+                    .navigationTitle("Chat")
+                    .navigationBarTitleDisplayMode(.inline)
+                }
+                .tabItem {
+                    Label("Chat", systemImage: "message.fill")
+                }
+
+                NavigationView {
+                    VStack {
+                        Text("Your Profile")
+                            .font(.largeTitle)
+                            .fontWeight(.bold)
+                    }
+                    .navigationTitle("Profile")
+                    .navigationBarTitleDisplayMode(.inline)
+                }
+                .tabItem {
+                    Label("Profile", systemImage: "person.fill")
+                }
+                
+                NavigationView {
+                    VStack {
+                        Text("Thrift Store")
+                            .font(.largeTitle)
+                            .fontWeight(.bold)
+                    }
+                    .navigationTitle("Thrift Store")
+                    .navigationBarTitleDisplayMode(.inline)
+                }
+                .tabItem {
+                    Label("Store", systemImage: "cart")
+                }
+
+                NavigationView {
+                    Form {
+                        Section(header: Text("General")) {
+                            Toggle(isOn: $enableNotifications) {
+                                Text("Notifications")
+                            }
+                            
+                            Toggle(isOn: $useDarkMode) {
+                                Text("Dark Mode")
+                            }
+
+                            NavigationLink(destination: AccountSettingsView()) {
+                                Label("Account", systemImage: "person.crop.circle")
+                            }
+                        }
+
+                        Section(header: Text("About")) {
+                            HStack {
+                                Text("Version")
+                                Spacer()
+                                Text(appVersion)
+                                    .foregroundColor(.gray)
+                            }
+                            
+                            Button(action: {
+                                print("Privacy Policy tapped")
+                            }) {
+                                Text("Privacy Policy")
+                            }
+                            
+                            Button(action: {
+                                print("Terms of Service tapped")
+                            }) {
+                                Text("Terms of Service")
+                            }
+                        }
+                        
+                        Section {
+                            Button(role: .destructive) {
+                                // Call the logout method from AuthManager
+                                authManager.logout()
+                            } label: {
+                                HStack {
+                                    Spacer()
+                                    Text("Log Out")
+                                    Spacer()
+                                }
+                            }
+                        }
+                    }
+                    .navigationTitle("Settings")
+                    .navigationBarTitleDisplayMode(.inline)
+                }
+                .tabItem {
+                    Label("Settings", systemImage: "gearshape.fill")
+                }
+            }
+            .preferredColorScheme(useDarkMode ? .dark : .light)
+            .accentColor(.blue)
+        } else {
+            // Show the SignInView if not logged in
+            SignInView()
         }
-        .padding()
-        .background(backgroundGradient)
     }
 }
 
+// MARK: - Example Sub-Settings View (unchanged)
+struct AccountSettingsView: View {
+    var body: some View {
+        Form {
+            Section(header: Text("Account Details")) {
+                Text("User ID: 12345")
+                Text("Email: user@example.com")
+            }
+            Section {
+                Button("Change Password") {
+                    print("Change password tapped")
+                }
+            }
+        }
+        .navigationTitle("Account")
+    }
+}
+
+// MARK: - Preview
 struct ContentView_Previews: PreviewProvider {
     static var previews: some View {
         ContentView()
+            // Important: Provide an AuthManager for the preview too
+            .environmentObject(AuthManager())
     }
 }
