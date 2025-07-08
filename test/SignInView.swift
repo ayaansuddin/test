@@ -1,14 +1,6 @@
-//
-//  SignInView.swift
-//  test (Your app's name)
-//
-//  Created by Your Name on Today's Date.
-//
-
 import SwiftUI
 
 struct SignInView: View {
-    // Access the shared AuthManager from the environment
     @EnvironmentObject var authManager: AuthManager
 
     var body: some View {
@@ -32,7 +24,6 @@ struct SignInView: View {
             Spacer()
             
             Button("Sign In") {
-                // Call the login method from AuthManager
                 authManager.login()
             }
             .font(.title2)
@@ -50,10 +41,9 @@ struct SignInView: View {
     }
 }
 
-// Optional: Preview for SignInView
 struct SignInView_Previews: PreviewProvider {
     static var previews: some View {
         SignInView()
-            .environmentObject(AuthManager()) // Provide a dummy AuthManager for preview
+            .environmentObject(AuthManager())
     }
 }

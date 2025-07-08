@@ -1,17 +1,16 @@
 import SwiftUI
 
 struct ContentView: View {
-    // Access the shared AuthManager from the environment
     @EnvironmentObject var authManager: AuthManager
+    @EnvironmentObject var runManager: RunManager
 
     @State private var enableNotifications: Bool = true
     @State private var appVersion: String = "1.0.0"
-
-    // Removed @AppStorage from useDarkMode as it's now global
     @AppStorage("isDarkModeEnabled") private var useDarkMode: Bool = false
+    
+    @State private var showingLogRunSheet = false
 
-    var body: some View { //this is not chatgpt
-        // Conditional view based on login status
+    var body: some View {
         if authManager.isLoggedIn {
             TabView {
                 NavigationView {
@@ -35,6 +34,60 @@ struct ContentView: View {
                         Text("Your Runs Log")
                             .font(.largeTitle)
                             .fontWeight(.bold)
+                            .padding(.bottom, 20)
+
+                        Button(action: {
+                            showingLogRunSheet = true
+                        }) {
+                            Label("Log New Run", systemImage: "plus.circle.fill")
+                                .font(.title2)
+                                .fontWeight(.semibold)
+                                .padding()
+                                .frame(maxWidth: .infinity)
+                                .background(Color.blue)
+                                .foregroundColor(.white)
+                                .cornerRadius(15)
+                        }
+                        .padding(.horizontal)
+                        .sheet(isPresented: $showingLogRunSheet) {
+                            LogRunView()
+                        }
+
+                        List {
+                            Section(header: Text("Past Runs")) {
+                                if runManager.runs.isEmpty {
+                                    Text("No runs logged yet. Log your first run!")
+                                        .foregroundColor(.gray)
+                                } else {
+                                    ForEach(runManager.runs) { (run: Run) in // Explicit type here to help compiler
+                                        HStack {
+                                            Image(systemName: "figure.run")
+                                            VStack(alignment: .leading) {
+                                                Text("Run on \(run.date.formatted(date: .abbreviated, time: .omitted))")
+                                                    .font(.headline)
+                                                Text("Distance: \(run.distance.formatted(.number.precision(.fractionLength(1)))) km")
+                                                    .font(.subheadline)
+                                                    .foregroundColor(.gray)
+                                                Text("Time: \(run.formattedTime) • Pace: \(run.formattedPace)/km")
+                                                    .font(.subheadline)
+                                                    .foregroundColor(.gray)
+                                                Text("Location: \(run.locationName)")
+                                                    .font(.subheadline)
+                                                    .foregroundColor(.gray)
+                                            }
+                                            Spacer()
+                                            Image(systemName: "chevron.right")
+                                                .font(.caption)
+                                                .foregroundColor(.gray)
+                                        }
+                                        .padding(.vertical, 5)
+                                    }
+                                    .onDelete(perform: runManager.deleteRun)
+                                }
+                            }
+                        }
+                        .listStyle(.insetGrouped)
+                        .padding(.top, 10)
                     }
                     .navigationTitle("Runs")
                     .navigationBarTitleDisplayMode(.inline)
@@ -134,7 +187,6 @@ struct ContentView: View {
                         
                         Section {
                             Button(role: .destructive) {
-                                // Call the logout method from AuthManager
                                 authManager.logout()
                             } label: {
                                 HStack {
@@ -155,13 +207,11 @@ struct ContentView: View {
             .preferredColorScheme(useDarkMode ? .dark : .light)
             .accentColor(.blue)
         } else {
-            // Show the SignInView if not logged in
             SignInView()
         }
     }
 }
 
-// MARK: - Example Sub-Settings View (unchanged)
 struct AccountSettingsView: View {
     var body: some View {
         Form {
@@ -179,11 +229,10 @@ struct AccountSettingsView: View {
     }
 }
 
-// MARK: - Preview
 struct ContentView_Previews: PreviewProvider {
     static var previews: some View {
         ContentView()
-            // Important: Provide an AuthManager for the preview too
             .environmentObject(AuthManager())
+            .environmentObject(RunManager())
     }
 }
